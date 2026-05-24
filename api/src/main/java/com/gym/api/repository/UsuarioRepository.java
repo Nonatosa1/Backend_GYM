@@ -53,4 +53,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
      * recuperar el usuario que esta intentando iniciar sesion.
      */
     Optional<Usuario> findByUsuario(String usuario);
+
+    Usuario findByPersonaIdPersona(Integer idPersona);
 }

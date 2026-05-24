@@ -44,6 +44,7 @@ public class PersonaMapper {
                 .habilitado(entidad.getHabilitado())
                 .fechaAlta(entidad.getFechaAlta())
                 .fechaBaja(entidad.getFechaBaja())
+                .cuentaConfirmada(entidad.getCuentaConfirmada())
                 .build();
     }
 }

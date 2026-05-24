@@ -1,6 +1,9 @@
 package com.gym.api.service;
 
 import com.gym.api.dto.request.PersonaRequestDTO;
+import com.gym.api.dto.request.RegistroRequestDTO;
+import com.gym.api.dto.request.UsuarioRequestDTO;
+import com.gym.api.dto.response.ConfirmacionResponseDTO;
 import com.gym.api.dto.response.PersonaResponseDTO;
 
 import java.util.List;
@@ -14,7 +17,7 @@ import java.util.List;
  */
 public interface PersonaService {
 
-    PersonaResponseDTO crear(PersonaRequestDTO request);
+    PersonaResponseDTO crear(RegistroRequestDTO Persona);
 
     PersonaResponseDTO consultarPorId(Integer id);
 
@@ -25,4 +28,8 @@ public interface PersonaService {
     PersonaResponseDTO actualizar(Integer id, PersonaRequestDTO request);
 
     void eliminar(Integer id);
+
+    List<PersonaResponseDTO> buscarPorNombre(String termino);
+
+    ConfirmacionResponseDTO confirmarCuenta(String token);
 }

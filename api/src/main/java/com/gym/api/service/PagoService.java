@@ -1,5 +1,6 @@
 package com.gym.api.service;
 
+import com.gym.api.dto.DashboardPagosDTO;
 import com.gym.api.dto.request.PagoRequestDTO;
 import com.gym.api.dto.response.PagoResponseDTO;
 
@@ -24,4 +25,6 @@ public interface PagoService {
     PagoResponseDTO actualizar(Integer id, PagoRequestDTO request);
 
     void eliminar(Integer id);
+
+    DashboardPagosDTO obtenerDashboardPagos(Integer idUsuario);
 }

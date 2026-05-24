@@ -53,4 +53,7 @@ public class PersonaResponseDTO {
 
     @Schema(description = "Momento en que se dio de baja logica (null si esta activo)")
     private LocalDateTime fechaBaja;
+
+    @Schema(description = "Indicador de cuando una persona ya valido su cuenta")
+    private Boolean cuentaConfirmada;
 }

@@ -1,7 +1,9 @@
 package com.gym.api.controller;
 
+import com.gym.api.dto.request.LoginRequestDTO;
 import com.gym.api.dto.request.UsuarioRequestDTO;
 import com.gym.api.dto.response.UsuarioResponseDTO;
+import com.gym.api.service.LoginService;
 import com.gym.api.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

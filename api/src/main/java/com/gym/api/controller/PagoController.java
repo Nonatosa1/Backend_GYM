@@ -1,5 +1,6 @@
 package com.gym.api.controller;
 
+import com.gym.api.dto.DashboardPagosDTO;
 import com.gym.api.dto.request.PagoRequestDTO;
 import com.gym.api.dto.response.PagoResponseDTO;
 import com.gym.api.service.PagoService;
@@ -68,5 +69,10 @@ public class PagoController {
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         pagoService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/dashboard/{idPersona}")
+    public ResponseEntity<DashboardPagosDTO> getDashboard(@PathVariable Integer idPersona) {
+        return ResponseEntity.ok(pagoService.obtenerDashboardPagos(idPersona));
     }
 }

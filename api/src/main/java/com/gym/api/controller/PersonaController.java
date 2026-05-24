@@ -1,6 +1,8 @@
 package com.gym.api.controller;
 
 import com.gym.api.dto.request.PersonaRequestDTO;
+import com.gym.api.dto.request.RegistroRequestDTO;
+import com.gym.api.dto.request.UsuarioRequestDTO;
 import com.gym.api.dto.response.PersonaResponseDTO;
 import com.gym.api.service.PersonaService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,14 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -39,8 +34,8 @@ public class PersonaController {
 
     @PostMapping
     @Operation(summary = "Crear una nueva persona")
-    public ResponseEntity<PersonaResponseDTO> crear(@Valid @RequestBody PersonaRequestDTO request) {
-        PersonaResponseDTO creada = personaService.crear(request);
+    public ResponseEntity<PersonaResponseDTO> crear(@Valid @RequestBody RegistroRequestDTO Persona) {
+        PersonaResponseDTO creada = personaService.crear(Persona);
         return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     }
 
@@ -73,5 +68,11 @@ public class PersonaController {
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         personaService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/buscar")
+    @Operation(summary = "Buscar personas por nombre, primer apellido o segundo apellido")
+    public ResponseEntity<List<PersonaResponseDTO>> buscarPorNombre(@RequestParam String termino) {
+        return ResponseEntity.ok(personaService.buscarPorNombre(termino));
     }
 }
