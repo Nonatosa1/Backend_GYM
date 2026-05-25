@@ -14,7 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 public class DashboardPagosDTO {
     private BigDecimal totalPagadoUltimos12Meses;
-    private BigDecimal pagosPendientes;
+    private Long pagosPendientes;
+    private BigDecimal montoTotalPorAportar;
     private Long totalMovimientos;
     private ProximoCargoDTO proximoCargoPendiente;
     private List<HistorialPagoDTO> historialPagos;

@@ -46,21 +46,22 @@ public interface PagoServiciosRepository extends JpaRepository<PagoServicios, In
      * Nota: Tbl_Pago_Servicios usa Id_tipo_pago (Tinyint) — asumo que referencia Cat_Metodo_Pago.
      */
     @Query("""
-           SELECT new com.gym.api.dto.HistorialPagoDTO(
-               ps.fechaAlta,
-               CONCAT('Renta de equipo: ', inv.inventario),
-               mp.metodoPago,
-               ps.total,
-               'PAGADO'
-           )
-           FROM PagoServicios ps
-           JOIN ps.rentaServicios rs
-           JOIN rs.inventario inv
-           JOIN ps.metodoPago mp
-           WHERE rs.usuario.idUsuario = :idUsuario
-             AND ps.habilitado = true
-           ORDER BY ps.fechaAlta DESC
-           """)
+       SELECT new com.gym.api.dto.HistorialPagoDTO(
+           ps.fechaAlta,
+           CONCAT('Renta de equipo: ', inv.inventario),
+           mp.metodoPago,
+           ps.total,
+           CAST('PAGADO' AS string),
+           CAST(NULL AS integer)
+       )
+       FROM PagoServicios ps
+       JOIN ps.rentaServicios rs
+       JOIN rs.inventario inv
+       JOIN ps.metodoPago mp
+       WHERE rs.usuario.idUsuario = :idUsuario
+         AND ps.habilitado = true
+       ORDER BY ps.fechaAlta DESC
+       """)
     List<HistorialPagoDTO> historialServicios(@Param("idUsuario") Integer idUsuario);
 
     /**

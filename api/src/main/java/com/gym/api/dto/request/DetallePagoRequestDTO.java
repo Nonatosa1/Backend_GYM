@@ -49,9 +49,9 @@ public class DetallePagoRequestDTO {
     @Schema(description = "Monto del abono", example = "500.00")
     private BigDecimal montoAbono;
 
-    @NotNull(message = "La fecha del abono es obligatoria")
+    /*@NotNull(message = "La fecha del abono es obligatoria")
     @PastOrPresent(message = "La fecha del abono no puede ser futura")
-    @Schema(description = "Momento en que se realizo el abono", example = "2026-05-12T14:30:00")
+    @Schema(description = "Momento en que se realizo el abono", example = "2026-05-12T14:30:00")*/
     private LocalDateTime fechaAbono;
 
     @NotNull(message = "El identificador del metodo de pago es obligatorio")

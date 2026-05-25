@@ -121,29 +121,38 @@ public class PagoServiceImpl implements PagoService {
         LocalDateTime hace12Meses = LocalDateTime.now().minusMonths(12);
         LocalDate hoy = LocalDate.now();
 
+        // Total pagado últimos 12 meses (suma de ambos flujos)
         BigDecimal totalInscripciones = pagoRepository
                 .totalPagadoInscripcionesUltimos12Meses(idUsuario, hace12Meses);
         BigDecimal totalServicios = pagoServiciosRepository
                 .totalPagadoServiciosUltimos12Meses(idUsuario, hace12Meses);
         BigDecimal totalPagado = totalInscripciones.add(totalServicios);
 
-        BigDecimal pendientes = pagoRepository.pagosPendientesInscripciones(idUsuario);
+        Long ordenesPendientes = pagoRepository.contarOrdenesPendientes(idUsuario);
 
+        // Total movimientos
         Long movimientosInsc = pagoRepository.totalMovimientosInscripciones(idUsuario);
         Long movimientosServ = pagoServiciosRepository.totalMovimientosServicios(idUsuario);
         Long totalMovimientos = movimientosInsc + movimientosServ;
 
+        //Monto total a aportar
+        BigDecimal montoPorAportar = pagoRepository.montoTotalPorAportar(idUsuario);
+
+        // Próximo cargo pendiente
         ProximoCargoDTO proximoCargo = obtenerProximoCargo(idUsuario, hoy);
 
+        // Historial unificado: abonos realizados + órdenes pendientes + servicios
         List<HistorialPagoDTO> historial = new ArrayList<>();
         historial.addAll(pagoRepository.historialInscripciones(idUsuario));
+        historial.addAll(pagoRepository.historialOrdenesPendientes(idUsuario));
         historial.addAll(pagoServiciosRepository.historialServicios(idUsuario));
         historial.sort(Comparator.comparing(HistorialPagoDTO::getFecha).reversed());
 
         return DashboardPagosDTO.builder()
                 .totalPagadoUltimos12Meses(totalPagado)
-                .pagosPendientes(pendientes)
+                .pagosPendientes(ordenesPendientes)
                 .totalMovimientos(totalMovimientos)
+                .montoTotalPorAportar(montoPorAportar)
                 .proximoCargoPendiente(proximoCargo)
                 .historialPagos(historial)
                 .build();

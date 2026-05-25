@@ -30,42 +30,99 @@ public interface PagoRepository extends JpaRepository<Pago, Integer> {
             @Param("idUsuario") Integer idUsuario,
             @Param("fechaInicio") LocalDateTime fechaInicio);
 
+    /**
+     * Cuenta cuántas órdenes (Pagos) del usuario aún no están totalmente cubiertas
+     * por sus abonos. Una orden está pendiente si la suma de sus abonos es menor
+     * al monto total.
+     */
     @Query("""
-           SELECT COALESCE(SUM(p.montoTotal - COALESCE(
-                  (SELECT SUM(d.montoAbono) FROM DetallePago d
-                   WHERE d.pago = p AND d.habilitado = true), 0)), 0)
-           FROM Pago p
-           JOIN p.inscripcion i
-           WHERE i.usuario.idUsuario = :idUsuario
-             AND p.habilitado = true
-             AND p.montoTotal > COALESCE(
-                  (SELECT SUM(d.montoAbono) FROM DetallePago d
-                   WHERE d.pago = p AND d.habilitado = true), 0)
-           """)
-    BigDecimal pagosPendientesInscripciones(@Param("idUsuario") Integer idUsuario);
+       SELECT COUNT(p)
+       FROM Pago p
+       JOIN p.inscripcion i
+       WHERE i.usuario.idUsuario = :idUsuario
+         AND p.habilitado = true
+         AND p.montoTotal > COALESCE(
+              (SELECT SUM(d.montoAbono) FROM DetallePago d
+               WHERE d.pago = p AND d.habilitado = true), 0)
+       """)
+    Long contarOrdenesPendientes(@Param("idUsuario") Integer idUsuario);
+
+    /**
+     * Historial de órdenes (Pagos) que aún tienen saldo pendiente.
+     * Se incluyen en el historial unificado con estado PENDIENTE o PARCIAL
+     * (según si tienen al menos un abono o ninguno).
+     */
+    @Query("""
+       SELECT new com.gym.api.dto.HistorialPagoDTO(
+           p.fechaAlta,
+           CONCAT('Membresía: ', m.membresia, ' (saldo pendiente)'),
+           CAST('-' AS string),
+           p.montoTotal - COALESCE(
+               (SELECT SUM(d.montoAbono) FROM DetallePago d
+                WHERE d.pago = p AND d.habilitado = true), CAST(0 AS BigDecimal)),
+           CASE
+               WHEN COALESCE(
+                   (SELECT SUM(d.montoAbono) FROM DetallePago d
+                    WHERE d.pago = p AND d.habilitado = true), CAST(0 AS BigDecimal)) = 0
+                    THEN CAST('PENDIENTE' AS string)
+               ELSE CAST('PARCIAL' AS string)
+           END,
+           p.idPago
+       )
+       FROM Pago p
+       JOIN p.inscripcion i
+       JOIN i.membresia m
+       WHERE i.usuario.idUsuario = :idUsuario
+         AND p.habilitado = true
+         AND p.montoTotal > COALESCE(
+              (SELECT SUM(d.montoAbono) FROM DetallePago d
+               WHERE d.pago = p AND d.habilitado = true), CAST(0 AS BigDecimal))
+       ORDER BY p.fechaAlta DESC
+       """)
+    List<HistorialPagoDTO> historialOrdenesPendientes(@Param("idUsuario") Integer idUsuario);
+
+    /**
+     * Suma el saldo pendiente de todas las órdenes (Pagos) del usuario que aún
+     * no están totalmente cubiertas por sus abonos. Es decir, cuánto le falta
+     * por aportar en total.
+     */
+    @Query("""
+       SELECT COALESCE(SUM(p.montoTotal - COALESCE(
+              (SELECT SUM(d.montoAbono) FROM DetallePago d
+               WHERE d.pago = p AND d.habilitado = true), 0)), 0)
+       FROM Pago p
+       JOIN p.inscripcion i
+       WHERE i.usuario.idUsuario = :idUsuario
+         AND p.habilitado = true
+         AND p.montoTotal > COALESCE(
+              (SELECT SUM(d.montoAbono) FROM DetallePago d
+               WHERE d.pago = p AND d.habilitado = true), 0)
+       """)
+    BigDecimal montoTotalPorAportar(@Param("idUsuario") Integer idUsuario);
 
     @Query("""
-           SELECT new com.gym.api.dto.HistorialPagoDTO(
-               dp.fechaAbono,
-               CONCAT('Membresía: ', m.membresia),
-               mp.metodoPago,
-               dp.montoAbono,
-               CASE
-                   WHEN (SELECT COALESCE(SUM(d.montoAbono), 0) FROM DetallePago d
-                         WHERE d.pago = p AND d.habilitado = true) >= p.montoTotal
-                        THEN 'PAGADO'
-                   ELSE 'PARCIAL'
-               END
-           )
-           FROM DetallePago dp
-           JOIN dp.pago p
-           JOIN p.inscripcion i
-           JOIN i.membresia m
-           JOIN dp.metodoPago mp
-           WHERE i.usuario.idUsuario = :idUsuario
-             AND dp.habilitado = true
-           ORDER BY dp.fechaAbono DESC
-           """)
+       SELECT new com.gym.api.dto.HistorialPagoDTO(
+           dp.fechaAbono,
+           CONCAT('Membresía: ', m.membresia),
+           mp.metodoPago,
+           dp.montoAbono,
+           CASE
+               WHEN (SELECT COALESCE(SUM(d.montoAbono), 0) FROM DetallePago d
+                     WHERE d.pago = p AND d.habilitado = true) >= p.montoTotal
+                    THEN CAST('PAGADO' AS string)
+               ELSE CAST('PARCIAL' AS string)
+           END,
+           CAST(NULL AS integer)
+       )
+       FROM DetallePago dp
+       JOIN dp.pago p
+       JOIN p.inscripcion i
+       JOIN i.membresia m
+       JOIN dp.metodoPago mp
+       WHERE i.usuario.idUsuario = :idUsuario
+         AND dp.habilitado = true
+       ORDER BY dp.fechaAbono DESC
+       """)
     List<HistorialPagoDTO> historialInscripciones(@Param("idUsuario") Integer idUsuario);
 
     @Query("""

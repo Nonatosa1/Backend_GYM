@@ -171,7 +171,7 @@ public class PersonaServiceImpl implements PersonaService {
                     if (Boolean.TRUE.equals(persona.getCuentaConfirmada())) {
                         return ConfirmacionResponseDTO.builder()
                                 .exito(true)
-                                .mensaje("Tu cuenta ya estaba confirmada previamente. Puedes iniciar sesion normalmente.")
+                                .mensaje("Tu cuenta ya fue confirmada. Puedes iniciar sesion normalmente.")
                                 .nombre(construirNombreCompleto(persona))
                                 .build();
                     }

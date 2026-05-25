@@ -143,6 +143,10 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         Persona persona = usuario.getPersona();
 
+        if (!usuario.getPersona().getCuentaConfirmada() || !usuario.getPersona().getHabilitado()) {
+            throw new UnauthorizedException("La cuenta no esta confirmada");
+        }
+
         if (!usuario.getPersona().getHabilitado()) {
             throw new UnauthorizedException("La cuenta no esta habilitada");
         }
