@@ -3,6 +3,7 @@ package com.gym.api.controller;
 import com.gym.api.dto.ReporteIngresosDTO;
 import com.gym.api.dto.ReporteMembresiasDTO;
 import com.gym.api.dto.ReporteVencimientosDTO;
+import com.gym.api.service.impl.ReporteIngresosExcelService;
 import com.gym.api.service.impl.ReporteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -12,12 +13,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.time.LocalDate;
 
 @RestController
@@ -25,6 +30,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class ReportesController {
     private final ReporteService reporteService;
+    private final ReporteIngresosExcelService reporteIngresosExcelService;
 
     @Operation(
             summary = "Reporte general de membresías",
@@ -123,8 +129,29 @@ public class ReportesController {
             ),
             @ApiResponse(responseCode = "500", description = "Error interno al generar el reporte")
     })
+
     @GetMapping("/vencimientos")
     public ResponseEntity<ReporteVencimientosDTO> getReporteVencimientos() {
         return ResponseEntity.ok(reporteService.reporteVencimiento());
+    }
+
+    @Operation(summary = "Descargar reporte de ingresos en Excel")
+    @GetMapping("/ingresos/excel")
+    public ResponseEntity<byte[]> descargarReporteIngresosExcel(
+            @RequestParam("fechaInicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam("fechaFin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) throws IOException {
+
+        ReporteIngresosDTO reporte = reporteService.generarReporte(fechaInicio, fechaFin);
+        byte[] excel = reporteIngresosExcelService.generarExcel(reporte);
+
+        String nombreArchivo = String.format("reporte_ingresos_%s_%s.xlsx", fechaInicio, fechaFin);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDispositionFormData("attachment", nombreArchivo);
+        headers.setContentLength(excel.length);
+
+        return new ResponseEntity<>(excel, headers, HttpStatus.OK);
     }
 }
